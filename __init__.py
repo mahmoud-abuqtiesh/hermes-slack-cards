@@ -166,8 +166,14 @@ def slack_prompt_section(info):
     return PROMPT_SECTION if info.get("platform") == "slack" else ""
 
 
-def register(ctx):
+def _on_slack_connect(native, adapter):
+    # Only the gateway connects to Slack. register() also runs in short-lived CLI probes
+    # (`hermes plugins update/validate`), where a background npm ci would be killed half way.
     ensure_deps()
+
+
+def register(ctx):
+    ctx.register_platform_handler("slack", _on_slack_connect)
     ctx.register_system_prompt_section("slack-cards", slack_prompt_section)
     ctx.register_tool(
         name="slack_card", toolset="hermes-slack", schema=SCHEMA, handler=slack_card,
