@@ -9,18 +9,21 @@ Only the conversion runs in Node; Hermes keeps its own Slack connection and post
 ## Install
 
 ```sh
-hermes plugins install mahmoud-abuqtiesh/hermes-slack-cards --ref <commit-sha> --enable
+hermes plugins install mahmoud-abuqtiesh/hermes-slack-cards --enable
 ```
 
 Then restart the gateway (`systemctl --user restart hermes-gateway`).
+To pick up new commits from `main` later, run `hermes plugins update slack-cards` and restart again.
 
 The plugin needs its locked Node dependencies (`npm ci`, about 35 MB).
 In a terminal, `hermes plugins install` asks and installs them.
 Non-interactive installs (Ansible, CI) skip that question, so the plugin runs the same `npm ci` itself on its first gateway start, using Hermes' bundled Node.
 That honors `security.allow_lazy_installs` (on by default); if you turned it off, run `npm ci --ignore-scripts` in the plugin directory yourself.
 Until the dependencies are in place, the tool tells the agent to answer in markdown.
+When an update changes `package-lock.json`, the plugin notices on the next start and runs `npm ci` again.
 
-Pin `--ref` to a commit so a deploy never pulls an unreviewed change.
+To pin a reviewed commit instead of following `main`, add `--ref <40-character commit SHA>`.
+A pinned install ignores `hermes plugins update`; move it with `install --force --ref <new SHA>`.
 
 ## Slack app
 

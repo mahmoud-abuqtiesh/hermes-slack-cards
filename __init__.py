@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 import re
@@ -62,7 +63,20 @@ PROMPT_SECTION = (
 LINK_ACTION_RE = re.compile(r"^link-")
 SLACK_LINK_RE = re.compile(r"<([^|>]+)(?:\|([^>]+))?>")
 
-_deps = {"state": "ready" if (HERE / "node_modules").is_dir() else "missing", "reason": None}
+# `hermes plugins update` pulls new code but leaves node_modules alone, so record which lockfile the
+# installed deps came from and reinstall when it changes.
+STAMP = HERE / "node_modules" / ".slack-cards-lock-sha256"
+
+
+def _lock_hash():
+    return hashlib.sha256((HERE / "package-lock.json").read_bytes()).hexdigest()
+
+
+def _deps_current():
+    return STAMP.is_file() and STAMP.read_text().strip() == _lock_hash()
+
+
+_deps = {"state": "ready" if _deps_current() else "missing", "reason": None}
 
 
 @lru_cache(maxsize=1)
@@ -86,6 +100,8 @@ def _install_deps():
     try:
         from pm.workspace import install_node_sidecar
         reason = install_node_sidecar(HERE, explicit=False)
+        if not reason:
+            STAMP.write_text(_lock_hash())
     except Exception as exc:
         reason = str(exc)
     _deps.update(state="failed" if reason else "ready", reason=reason)

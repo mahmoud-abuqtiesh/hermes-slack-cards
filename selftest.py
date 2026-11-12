@@ -11,7 +11,10 @@ here = os.path.dirname(os.path.abspath(__file__))
 spec = importlib.util.spec_from_file_location("slack_cards", os.path.join(here, "__init__.py"))
 m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
-assert m._deps["state"] == "ready", "run `npm ci` in the plugin dir first"
+if m._deps["state"] != "ready":
+    m._install_deps()
+assert m._deps["state"] == "ready", m._deps
+assert m._deps_current()
 
 generated = subprocess.run([m.node_bin(), "render.mjs", "prompt"], cwd=here, capture_output=True, text=True,
                            check=True).stdout
