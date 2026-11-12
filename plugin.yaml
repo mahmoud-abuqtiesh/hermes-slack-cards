@@ -1,0 +1,5 @@
+name: slack-cards
+version: "0.1.0"
+description: slack_card tool - the agent posts native Slack cards (KPI tiles, charts, tables, link buttons) built from a json-render chat spec
+provides_tools:
+  - slack_card

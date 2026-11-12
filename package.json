@@ -1,0 +1,12 @@
+{
+  "name": "hermes-slack-cards",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@chat-adapter/slack": "4.44.0",
+    "@json-render/chat": "0.22.0",
+    "@json-render/core": "0.22.0",
+    "chat": "4.44.0",
+    "zod": "4.6.7"
+  }
+}
